@@ -71,3 +71,6 @@ target/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# others
+homework.md
