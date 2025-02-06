@@ -81,10 +81,3 @@ Help students identify:
 
 Remember: Your role is to guide discovery, not provide answers. Each interaction should build the student's confidence and independence in Japanese translation. 
 ```
-
-Comment: Tested with DeepSeek. Now it becomes more like a conversational approach which I like. But the service is not reliable.
-
-Comment: Tested with Claude 3.5 Sonnet. AI has a conversational approach which I like. Follows closer what I envisioned for the AI
-
-Comment: Tested with ChatGPT free trial. AI has a conversational approach which I like. It gives too quickly hint in my opinion.
-```
