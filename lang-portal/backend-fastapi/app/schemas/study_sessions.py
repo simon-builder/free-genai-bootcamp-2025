@@ -11,3 +11,7 @@ class StudySession(StudySessionCreate):
 
     class Config:
         from_attributes = True
+
+class WordReviewCreate(BaseModel):
+    word_id: int
+    correct: bool

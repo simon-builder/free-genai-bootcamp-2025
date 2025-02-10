@@ -48,3 +48,26 @@ def get_group(
         "words_count": group.words_count,
         "words": words
     }
+
+@router.post("/{group_id}/words/{word_id}")
+def add_word_to_group(
+    group_id: int,
+    word_id: int,
+    db: Session = Depends(get_db)
+):
+    # Verify group exists
+    group = db.query(models.Group).filter(models.Group.id == group_id).first()
+    if not group:
+        raise HTTPException(status_code=404, detail="Group not found")
+    
+    # Verify word exists
+    word = db.query(models.Word).filter(models.Word.id == word_id).first()
+    if not word:
+        raise HTTPException(status_code=404, detail="Word not found")
+    
+    # Add word to group
+    group.words.append(word)
+    group.words_count = len(group.words)  # Update word count
+    db.commit()
+    
+    return {"status": "success", "message": "Word added to group"}
