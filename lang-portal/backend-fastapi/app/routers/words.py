@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import func, desc, asc, case
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app import models
-from app.schemas.words import WordCreate
+from app.schemas.words import WordCreate, Word
+from typing import Literal
 
 router = APIRouter(
     prefix="/words",
@@ -12,56 +14,105 @@ router = APIRouter(
 @router.get("")
 def get_words(
     page: int = 1,
-    sort_by: str = "kanji",
-    order: str = "asc",
+    sort_by: Literal["kanji", "romaji", "english", "correct_count", "wrong_count"] = "kanji",
+    order: Literal["asc", "desc"] = "asc",
     db: Session = Depends(get_db)
 ):
-    # Validate sort field
-    valid_sort_fields = ['kanji', 'romaji', 'english', 'correct_count', 'wrong_count']
-    if sort_by not in valid_sort_fields:
-        raise HTTPException(status_code=400, detail=f"Invalid sort field. Must be one of: {valid_sort_fields}")
-    
-    # Validate order
-    if order not in ['asc', 'desc']:
-        raise HTTPException(status_code=400, detail="Order must be 'asc' or 'desc'")
-    
-    # Calculate offset
-    limit = 10  # items per page
+    # Calculate pagination
+    limit = 10
     offset = (page - 1) * limit
     
-    # Build query
-    query = db.query(models.Word)
+    # Base query with review statistics
+    query = db.query(
+        models.Word,
+        func.count(case(
+            (models.WordReviewItem.correct == True, 1),
+            else_=None
+        )).label('correct_count'),
+        func.count(case(
+            (models.WordReviewItem.correct == False, 1),
+            else_=None
+        )).label('wrong_count')
+    ).outerjoin(
+        models.WordReviewItem
+    ).group_by(
+        models.Word.id
+    )
     
     # Apply sorting
-    if order == 'asc':
-        query = query.order_by(getattr(models.Word, sort_by).asc())
+    if sort_by in ["kanji", "romaji", "english"]:
+        # Direct column sorting
+        if order == "asc":
+            query = query.order_by(asc(getattr(models.Word, sort_by)))
+        else:
+            query = query.order_by(desc(getattr(models.Word, sort_by)))
     else:
-        query = query.order_by(getattr(models.Word, sort_by).desc())
+        # Review statistics sorting
+        if order == "asc":
+            query = query.order_by(asc(sort_by))
+        else:
+            query = query.order_by(desc(sort_by))
     
     # Apply pagination
-    words = query.offset(offset).limit(limit).all()
+    results = query.offset(offset).limit(limit).all()
+    
+    # Format response
+    words = []
+    for word, correct, wrong in results:
+        word_dict = {
+            "id": word.id,
+            "kanji": word.kanji,
+            "romaji": word.romaji,
+            "english": word.english,
+            "parts": word.parts,
+            "correct_count": correct,
+            "wrong_count": wrong
+        }
+        words.append(word_dict)
     
     return words
 
 @router.get("/{word_id}")
 def get_word(word_id: int, db: Session = Depends(get_db)):
-    word = db.query(models.Word).filter(models.Word.id == word_id).first()
-    if not word:
+    # Query word with review statistics
+    result = db.query(
+        models.Word,
+        func.count(case(
+            (models.WordReviewItem.correct == True, 1),
+            else_=None
+        )).label('correct_count'),
+        func.count(case(
+            (models.WordReviewItem.correct == False, 1),
+            else_=None
+        )).label('wrong_count')
+    ).outerjoin(
+        models.WordReviewItem
+    ).filter(
+        models.Word.id == word_id
+    ).group_by(
+        models.Word.id
+    ).first()
+    
+    if not result:
         raise HTTPException(status_code=404, detail="Word not found")
-    return word
-
-@router.post("")
-def create_word(
-    word: WordCreate,
-    db: Session = Depends(get_db)
-):
-     # Convert Pydantic model to dict
-    word_data = word.model_dump()
     
-    # Create SQLAlchemy model instance with dict data
-    db_word = models.Word(**word_data)
+    word, correct, wrong = result
     
-    db.add(db_word)
-    db.commit()
-    db.refresh(db_word)
-    return db_word
+    # Try to parse JSON string to dict if it's a string
+    parts = word.parts
+    if isinstance(parts, str):
+        import json
+        try:
+            parts = json.loads(parts)
+        except json.JSONDecodeError:
+            parts = {}
+    
+    return {
+        "id": word.id,
+        "kanji": word.kanji,
+        "romaji": word.romaji,
+        "english": word.english,
+        "parts": parts,
+        "correct_count": correct,
+        "wrong_count": wrong
+    }
