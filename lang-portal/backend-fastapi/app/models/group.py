@@ -9,4 +9,6 @@ class Group(Base):
     name = Column(String, nullable=False)
     words_count = Column(Integer, default=0)
 
+    # Add relationships
     study_sessions = relationship("StudySession", back_populates="group")
+    words = relationship("Word", secondary=word_groups, back_populates="groups")

@@ -10,6 +10,9 @@ class Word(Base):
     romaji = Column(String, nullable=False)
     english = Column(String, nullable=False)
     parts = Column(String, nullable=False)  # Store as JSON string
+    
+    # Add many-to-many relationship
+    groups = relationship("Group", secondary=word_groups, back_populates="words")
 
     def __init__(self, **kwargs):
         # Convert parts dict to JSON string before storing
