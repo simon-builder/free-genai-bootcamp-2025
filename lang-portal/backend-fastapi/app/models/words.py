@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, JSON
 from sqlalchemy.orm import relationship
 from app.database import Base
 from .word_groups import word_groups
@@ -11,7 +11,8 @@ class Word(Base):
     kanji = Column(String, nullable=False)
     romaji = Column(String, nullable=False)
     english = Column(String, nullable=False)
-    parts = Column(String, nullable=False)
+    parts = Column(JSON, nullable=False)
+    type = Column(String)
 
     # Add relationships
     groups = relationship("Group", secondary=word_groups, back_populates="words")
