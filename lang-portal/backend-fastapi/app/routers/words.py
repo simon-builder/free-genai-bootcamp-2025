@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app import models
+from app.schemas.words import WordCreate
 
 router = APIRouter(
     prefix="/words",
@@ -51,19 +52,16 @@ def get_word(word_id: int, db: Session = Depends(get_db)):
 
 @router.post("")
 def create_word(
-    kanji: str, 
-    romaji: str, 
-    english: str, 
-    parts: dict,
+    word: WordCreate,
     db: Session = Depends(get_db)
 ):
-    word = models.Word(
-        kanji=kanji,
-        romaji=romaji,
-        english=english,
-        parts=parts
-    )
-    db.add(word)
+     # Convert Pydantic model to dict
+    word_data = word.model_dump()
+    
+    # Create SQLAlchemy model instance with dict data
+    db_word = models.Word(**word_data)
+    
+    db.add(db_word)
     db.commit()
-    db.refresh(word)
-    return word
+    db.refresh(db_word)
+    return db_word
