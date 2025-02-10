@@ -1,6 +1,6 @@
 import { getWords } from "@/lib/api"
 import WordsTable from "@/components/WordsTable"
-// import AddWordForm from "@/components/AddWordForm"
+import AddWordForm from "@/components/AddWordForm"
 
 export default async function WordsPage() {
   const words = await getWords()
