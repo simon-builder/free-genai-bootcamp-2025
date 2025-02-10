@@ -1,32 +1,50 @@
-""" from fastapi import FastAPI, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from app.models import Base
-from app.database import engine, get_db
+from sqlalchemy import desc, asc
+from app.database import get_db
 from app import models
+from app.schemas.groups import GroupCreate, Group, GroupWithWords
+from typing import Literal
 
-Base.metadata.create_all(bind=engine)
+router = APIRouter(
+    prefix="/groups",
+    tags=["groups"]
+)
 
-app = FastAPI()
-
-# Create a group
-@app.post("/groups")
-def create_group(name: str, db: Session = Depends(get_db)):
-    group = models.Group(name=name)
-    db.add(group)
-    db.commit()
-    db.refresh(group)
-    return group
-
-# Get all groups
-@app.get("/groups")
-def get_groups(db: Session = Depends(get_db)):
-    groups = db.query(models.Group).all()
-    return groups
-
-# Get a specific group
-@app.get("/groups/{group_id}")
-def get_group(group_id: int, db: Session = Depends(get_db)):
+@router.get("/{group_id}")
+def get_group(
+    group_id: int,
+    page: int = 1,
+    sort_by: Literal["kanji", "romaji", "english"] = "kanji",
+    order: Literal["asc", "desc"] = "asc",
+    db: Session = Depends(get_db)
+):
+    # Get the group
     group = db.query(models.Group).filter(models.Group.id == group_id).first()
     if not group:
         raise HTTPException(status_code=404, detail="Group not found")
-    return group """
+    
+    # Calculate pagination for words
+    limit = 10
+    offset = (page - 1) * limit
+    
+    # Query words through the relationship with sorting
+    query = db.query(models.Word)\
+        .join(models.word_groups)\
+        .filter(models.word_groups.c.group_id == group_id)
+    
+    # Apply sorting
+    if order == "asc":
+        query = query.order_by(asc(getattr(models.Word, sort_by)))
+    else:
+        query = query.order_by(desc(getattr(models.Word, sort_by)))
+    
+    # Apply pagination
+    words = query.offset(offset).limit(limit).all()
+    
+    return {
+        "id": group.id,
+        "name": group.name,
+        "words_count": group.words_count,
+        "words": words
+    }
