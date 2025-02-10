@@ -1,5 +1,7 @@
 "use client"
 
+// Commenting out the entire component for now
+/*
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -9,15 +11,33 @@ import { createWord } from "@/lib/api"
 
 export default function AddWordForm() {
   const [isOpen, setIsOpen] = useState(false)
-  const [wordData, setWordData] = useState({ kanji: "", romaji: "", english: "" })
+  const [wordData, setWordData] = useState({ 
+    kanji: "", 
+    romaji: "", 
+    english: "", 
+    parts: [],
+    type: "verb"
+  })
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    await createWord(wordData)
-    setIsOpen(false)
-    setWordData({ kanji: "", romaji: "", english: "" })
-    router.refresh()
+    try {
+      const formattedWord = {
+        ...wordData,
+        parts: [{
+          kanji: wordData.kanji,
+          romaji: [wordData.romaji]
+        }]
+      }
+      console.log('Submitting word:', formattedWord) // Debug log
+      await createWord(formattedWord)
+      setIsOpen(false)
+      setWordData({ kanji: "", romaji: "", english: "", parts: [], type: "verb" })
+      router.refresh()
+    } catch (error) {
+      console.error('Error submitting form:', error) // Debug log
+    }
   }
 
   return (
@@ -55,4 +75,10 @@ export default function AddWordForm() {
       </DialogContent>
     </Dialog>
   )
+}
+*/
+
+// Temporary empty component
+export default function AddWordForm() {
+  return null
 }
