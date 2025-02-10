@@ -13,6 +13,7 @@ class Word(Base):
     
     # Add many-to-many relationship
     groups = relationship("Group", secondary=word_groups, back_populates="words")
+    review_items = relationship("WordReviewItem", back_populates="word")
 
     def __init__(self, **kwargs):
         # Convert parts dict to JSON string before storing

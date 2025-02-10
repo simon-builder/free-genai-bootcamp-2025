@@ -14,3 +14,4 @@ class StudySession(Base):
     # Relationships
     group = relationship("Group", back_populates="study_sessions")
     study_activity = relationship("StudyActivity", back_populates="study_sessions")
+    review_items = relationship("WordReviewItem", back_populates="study_session")
