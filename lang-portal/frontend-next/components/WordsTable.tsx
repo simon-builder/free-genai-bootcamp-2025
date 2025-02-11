@@ -6,7 +6,12 @@ import { Button } from "@/components/ui/button"
 import { getWords, type Word } from "@/lib/api"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
-export default function WordsTable({ initialWords }: { initialWords: Word[] }) {
+interface WordsTableProps {
+  initialWords: Word[]
+  wordType?: 'verb' | 'adjective'
+}
+
+export default function WordsTable({ initialWords, wordType }: WordsTableProps) {
   const [words, setWords] = useState(initialWords)
   const [currentPage, setCurrentPage] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
@@ -16,7 +21,10 @@ export default function WordsTable({ initialWords }: { initialWords: Word[] }) {
     setIsLoading(true)
     try {
       const newWords = await getWords(newPage)
-      setWords(newWords)
+      const filteredWords = wordType 
+        ? newWords.filter(word => word.type === wordType)
+        : newWords
+      setWords(filteredWords)
       setCurrentPage(newPage)
     } catch (error) {
       console.error('Error changing page:', error)
@@ -27,58 +35,62 @@ export default function WordsTable({ initialWords }: { initialWords: Word[] }) {
 
   return (
     <div className="space-y-4">
-      <div className="border rounded-lg overflow-hidden">
+      <div className="overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-50">
-              <TableHead className="font-semibold">Kanji</TableHead>
-              <TableHead className="font-semibold">Romaji</TableHead>
-              <TableHead className="font-semibold">English</TableHead>
-              <TableHead className="font-semibold">Type</TableHead>
+            <TableRow className="bg-amber-50/50 dark:bg-gray-800">
+              <TableHead className="font-medium text-amber-900 dark:text-gray-200">Kanji</TableHead>
+              <TableHead className="font-medium text-amber-900 dark:text-gray-200">Romaji</TableHead>
+              <TableHead className="font-medium text-amber-900 dark:text-gray-200">English</TableHead>
+              {!wordType && (
+                <TableHead className="font-medium text-amber-900 dark:text-gray-200">Type</TableHead>
+              )}
             </TableRow>
           </TableHeader>
           <TableBody>
             {words.map((word) => (
               <TableRow 
                 key={word.id}
-                className="hover:bg-gray-50 transition-colors"
+                className="hover:bg-amber-50/30 dark:hover:bg-gray-700/50 transition-colors duration-200"
               >
-                <TableCell className="font-medium">{word.kanji}</TableCell>
-                <TableCell>{word.romaji}</TableCell>
-                <TableCell>{word.english}</TableCell>
-                <TableCell>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    word.type === 'verb' 
-                      ? 'bg-blue-100 text-blue-700' 
-                      : 'bg-purple-100 text-purple-700'
-                  }`}>
-                    {word.type}
-                  </span>
-                </TableCell>
+                <TableCell className="font-medium text-gray-900 dark:text-gray-100">{word.kanji}</TableCell>
+                <TableCell className="text-gray-700 dark:text-gray-300">{word.romaji}</TableCell>
+                <TableCell className="text-gray-700 dark:text-gray-300">{word.english}</TableCell>
+                {!wordType && (
+                  <TableCell>
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      word.type === 'verb' 
+                        ? 'bg-green-200 text-amber-800 dark:bg-green-900 dark:text-green-100' 
+                        : 'bg-orange-200 text-orange-800 dark:bg-orange-900 dark:text-orange-100'
+                    }`}>
+                      {word.type}
+                    </span>
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </div>
 
-      <div className="flex justify-between items-center px-4">
+      <div className="flex justify-between items-center px-4 py-2">
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
           onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1 || isLoading}
-          className="flex items-center gap-2"
+          className="text-amber-800 hover:text-amber-900 hover:bg-amber-100 dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
         >
           <ChevronLeft className="h-4 w-4" />
           Previous
         </Button>
-        <span className="text-sm text-gray-500">Page {currentPage}</span>
+        <span className="text-sm text-amber-800 dark:text-gray-300">Page {currentPage}</span>
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
           onClick={() => handlePageChange(currentPage + 1)}
           disabled={isLoading}
-          className="flex items-center gap-2"
+          className="text-amber-800 hover:text-amber-900 hover:bg-amber-100 dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
         >
           Next
           <ChevronRight className="h-4 w-4" />
@@ -87,4 +99,3 @@ export default function WordsTable({ initialWords }: { initialWords: Word[] }) {
     </div>
   )
 }
-
