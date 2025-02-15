@@ -36,4 +36,22 @@ Check FastAPI docs for endpoint documentation
 http://127.0.0.1:8000/docs
 ```
 
+# Setup frontend
 
+Navigate to frontend folder
+
+```
+cd .\frontend-next\
+```
+
+Install dependencies
+
+```
+npm install
+```
+
+Run next.js dev server
+
+```
+npm run dev
+```
