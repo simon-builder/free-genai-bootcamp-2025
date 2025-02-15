@@ -16,11 +16,11 @@ def get_words(
     page: int = 1,
     sort_by: Literal["kanji", "romaji", "english", "correct_count", "wrong_count"] = "kanji",
     order: Literal["asc", "desc"] = "asc",
+    limit: int | None = 10,
     db: Session = Depends(get_db)
 ):
     # Calculate pagination
-    limit = 10
-    offset = (page - 1) * limit
+    offset = (page - 1) * (limit or 10)
     
     # Base query with review statistics
     query = db.query(
@@ -55,8 +55,11 @@ def get_words(
         else:
             query = query.order_by(desc(sort_by))
     
-    # Apply pagination
-    results = query.offset(offset).limit(limit).all()
+    # Apply pagination only if limit is not 0
+    if limit != 0:
+        query = query.offset(offset).limit(limit)
+    
+    results = query.all()
     
     # Format response with groups
     words = []
