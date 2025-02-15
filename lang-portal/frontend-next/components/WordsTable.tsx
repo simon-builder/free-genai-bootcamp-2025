@@ -3,15 +3,17 @@
 import { useState } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { getWords, type Word } from "@/lib/api"
+import { getWords, getWordsByGroup, type Word, type Group } from "@/lib/api"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
 interface WordsTableProps {
   initialWords: Word[]
   wordType?: 'verb' | 'adjective'
+  groupId?: number
+  allGroups: Group[]
 }
 
-export default function WordsTable({ initialWords, wordType }: WordsTableProps) {
+export default function WordsTable({ initialWords, wordType, groupId, allGroups }: WordsTableProps) {
   const [words, setWords] = useState(initialWords)
   const [currentPage, setCurrentPage] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
@@ -20,17 +22,28 @@ export default function WordsTable({ initialWords, wordType }: WordsTableProps) 
     if (newPage < 1) return
     setIsLoading(true)
     try {
-      const newWords = await getWords(newPage)
-      const filteredWords = wordType 
-        ? newWords.filter(word => word.type === wordType)
-        : newWords
-      setWords(filteredWords)
+      let newWords: Word[] = []
+      if (groupId) {
+        newWords = await getWordsByGroup(groupId, newPage)
+      } else {
+        newWords = await getWords(newPage)
+      }
+      setWords(newWords)
       setCurrentPage(newPage)
     } catch (error) {
       console.error('Error changing page:', error)
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const getWordGroup = (word: Word) => {
+    // Find the word's group ID from its groups array
+    const wordGroupId = word.groups?.[0]?.id
+    if (!wordGroupId) return null
+    
+    // Find the matching group from allGroups
+    return allGroups.find(g => g.id === wordGroupId)
   }
 
   return (
@@ -48,27 +61,30 @@ export default function WordsTable({ initialWords, wordType }: WordsTableProps) 
             </TableRow>
           </TableHeader>
           <TableBody>
-            {words.map((word) => (
-              <TableRow 
-                key={word.id}
-                className="hover:bg-amber-50/30 dark:hover:bg-gray-700/50 transition-colors duration-200"
-              >
-                <TableCell className="font-medium text-gray-900 dark:text-gray-100">{word.kanji}</TableCell>
-                <TableCell className="text-gray-700 dark:text-gray-300">{word.romaji}</TableCell>
-                <TableCell className="text-gray-700 dark:text-gray-300">{word.english}</TableCell>
-                {!wordType && (
-                  <TableCell>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      word.type === 'verb' 
-                        ? 'bg-green-200 text-amber-800 dark:bg-green-900 dark:text-green-100' 
-                        : 'bg-orange-200 text-orange-800 dark:bg-orange-900 dark:text-orange-100'
-                    }`}>
-                      {word.type}
-                    </span>
-                  </TableCell>
-                )}
-              </TableRow>
-            ))}
+            {words.map((word) => {
+              const group = getWordGroup(word)
+              return (
+                <TableRow 
+                  key={word.id}
+                  className="hover:bg-amber-50/30 dark:hover:bg-gray-700/50 transition-colors duration-200"
+                >
+                  <TableCell className="font-medium text-gray-900 dark:text-gray-100">{word.kanji}</TableCell>
+                  <TableCell className="text-gray-700 dark:text-gray-300">{word.romaji}</TableCell>
+                  <TableCell className="text-gray-700 dark:text-gray-300">{word.english}</TableCell>
+                  {!wordType && (
+                    <TableCell>
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        group?.name === 'verb'
+                          ? 'bg-green-200 text-amber-800 dark:bg-green-900 dark:text-green-100' 
+                          : 'bg-orange-200 text-orange-800 dark:bg-orange-900 dark:text-orange-100'
+                      }`}>
+                        {group?.name || 'unknown'}
+                      </span>
+                    </TableCell>
+                  )}
+                </TableRow>
+              )
+            })}
           </TableBody>
         </Table>
       </div>

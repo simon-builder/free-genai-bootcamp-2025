@@ -1,4 +1,4 @@
-import { getWords } from "@/lib/api"
+import { getWords, getWordsByGroup, getGroups } from "@/lib/api"
 import WordsTable from "@/components/WordsTable"
 import { Sparkles } from "lucide-react"
 
@@ -8,10 +8,22 @@ interface WordsPageProps {
 
 export default async function WordsPage({ searchParams }: WordsPageProps) {
   try {
-    const allWords = await getWords(1, "kanji", "asc")
-    const filteredWords = searchParams.type 
-      ? allWords.filter(word => word.type === searchParams.type)
-      : allWords
+    // Get all groups first
+    const groups = await getGroups()
+    
+    // Then find target group if type is specified
+    const targetGroup = searchParams.type 
+      ? groups.find(group => group.name === searchParams.type)
+      : null
+
+    if (searchParams.type && !targetGroup) {
+      throw new Error(`Group not found for type: ${searchParams.type}`)
+    }
+
+    // Get words based on whether we have a group filter or not
+    const words = targetGroup 
+      ? await getWordsByGroup(targetGroup.id)
+      : await getWords(1, "kanji", "asc")
 
     const pageTitle = searchParams.type 
       ? `${searchParams.type === 'verb' ? 'Verbs' : 'Adjectives'}`
@@ -36,7 +48,12 @@ export default async function WordsPage({ searchParams }: WordsPageProps) {
         </div>
 
         <div className="bg-white/50 dark:bg-gray-800/50 rounded-xl shadow-sm border border-amber-100 dark:border-gray-800 backdrop-blur-sm">
-          <WordsTable initialWords={filteredWords} wordType={searchParams.type} />
+          <WordsTable 
+            initialWords={words} 
+            wordType={searchParams.type}
+            groupId={targetGroup?.id}
+            allGroups={groups}
+          />
         </div>
       </div>
     )

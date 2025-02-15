@@ -1,13 +1,36 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, BookOpen, Layers, Activity, Sparkles } from "lucide-react"
-import { getWords } from "@/lib/api"
+import { getAllWords, getGroups } from "@/lib/api"
 import Link from "next/link"
 
 export default async function Dashboard() {
-  const words = await getWords()
-  const verbCount = words.filter(word => word.type === "verb").length
-  const adjectiveCount = words.filter(word => word.type === "adjective").length
+  const [words, groups] = await Promise.all([
+    getAllWords(),
+    getGroups()
+  ])
+
+  console.log('All Words:', words)
+  console.log('Groups:', groups)
+
+  // Find verb and adjective groups
+  const verbGroup = groups.find(g => g.name === 'verb')
+  const adjectiveGroup = groups.find(g => g.name === 'adjective')
+
+  console.log('Verb Group:', verbGroup)
+  console.log('Adjective Group:', adjectiveGroup)
+
+  // Count words in each group
+  const verbCount = words.filter(word => 
+    word.groups?.some(g => g.id === verbGroup?.id)
+  ).length
+
+  const adjectiveCount = words.filter(word => 
+    word.groups?.some(g => g.id === adjectiveGroup?.id)
+  ).length
+
+  console.log('Verb Count:', verbCount)
+  console.log('Adjective Count:', adjectiveCount)
 
   return (
     <div className="p-6 from-amber-50/50 to-transparent min-h-screen">

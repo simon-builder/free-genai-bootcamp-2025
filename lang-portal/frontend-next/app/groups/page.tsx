@@ -1,12 +1,24 @@
-import { getWords } from "@/lib/api"
+import { getAllWords, getGroups, type Word, type Group } from "@/lib/api"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { BookOpen, Pencil, Sparkles, ArrowRight } from "lucide-react"
 import Link from "next/link"
 
 export default async function GroupsPage() {
-  const words = await getWords()
-  const verbCount = words.filter((word) => word.type === "verb").length
-  const adjectiveCount = words.filter((word) => word.type === "adjective").length
+  const [words, groups] = await Promise.all([
+    getAllWords(),
+    getGroups()
+  ])
+
+  const verbGroup = groups.find((g: Group) => g.name === 'verb')
+  const adjectiveGroup = groups.find((g: Group) => g.name === 'adjective')
+
+  const verbCount = words.filter((word: Word) => 
+    word.groups?.some(g => g.id === verbGroup?.id)
+  ).length
+
+  const adjectiveCount = words.filter((word: Word) => 
+    word.groups?.some(g => g.id === adjectiveGroup?.id)
+  ).length
 
   return (
     <div className="p-6">

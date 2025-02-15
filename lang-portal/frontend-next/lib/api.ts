@@ -9,7 +9,8 @@ export interface Word {
   kanji: string
   romaji: string
   english: string
-  parts: any // TODO: Define proper type for parts
+  parts: Array<{ kanji: string; romaji: string[] }>
+  groups: Array<{ id: number; name: string }>
   type: string
   correct_count: number
   wrong_count: number
@@ -30,13 +31,30 @@ export interface Group {
 }
 
 // Words API
-export const getWords = async (page?: number, sortBy = "kanji", order: "asc" | "desc" = "asc") => {
-  const params = new URLSearchParams()
-  if (page) params.append("page", page.toString())
-  params.append("sort_by", sortBy)
-  params.append("order", order)
+export const getWords = async (
+  page: number = 1,
+  orderBy: string = "kanji",
+  order: "asc" | "desc" = "asc"
+): Promise<Word[]> => {
+  const response = await api.get<Word[]>(`/words?page=${page}&order_by=${orderBy}&order=${order}`)
+  console.log('Words API Response:', JSON.stringify(response.data, null, 2))
+  return response.data
+}
 
-  const response = await api.get<Word[]>(`/words?${params}`)
+export const getWordsByGroup = async (
+  groupId: number,
+  page: number = 1,
+  orderBy: string = "kanji",
+  order: "asc" | "desc" = "asc"
+): Promise<Word[]> => {
+  const response = await api.get<{ words: Word[] }>(`/groups/${groupId}?page=${page}&order_by=${orderBy}&order=${order}`)
+  return response.data.words
+}
+
+export const getGroups = async (
+  page: number = 1
+): Promise<Group[]> => {
+  const response = await api.get<Group[]>(`/groups?page=${page}`)
   return response.data
 }
 
@@ -58,6 +76,11 @@ export const createStudySession = async () => {
 
 export const logWordReview = async (sessionId: number, reviewData: any) => {
   const response = await api.post(`/study_sessions/${sessionId}/review`, reviewData)
+  return response.data
+}
+
+export const getAllWords = async (): Promise<Word[]> => {
+  const response = await api.get<Word[]>(`/words?limit=0`)  // limit=0 means no limit
   return response.data
 }
 
