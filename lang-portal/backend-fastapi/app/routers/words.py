@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import func, desc, asc, case
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app.database import get_db
 from app import models
 from app.schemas.words import WordCreate, Word
@@ -35,6 +35,8 @@ def get_words(
         )).label('wrong_count')
     ).outerjoin(
         models.WordReviewItem
+    ).options(
+        joinedload(models.Word.groups)
     ).group_by(
         models.Word.id
     )
@@ -56,7 +58,7 @@ def get_words(
     # Apply pagination
     results = query.offset(offset).limit(limit).all()
     
-    # Format response
+    # Format response with groups
     words = []
     for word, correct, wrong in results:
         word_dict = {
@@ -66,7 +68,8 @@ def get_words(
             "english": word.english,
             "parts": word.parts,
             "correct_count": correct,
-            "wrong_count": wrong
+            "wrong_count": wrong,
+            "groups": [{"id": g.id, "name": g.name} for g in word.groups]
         }
         words.append(word_dict)
     
@@ -87,6 +90,8 @@ def get_word(word_id: int, db: Session = Depends(get_db)):
         )).label('wrong_count')
     ).outerjoin(
         models.WordReviewItem
+    ).options(
+        joinedload(models.Word.groups)
     ).filter(
         models.Word.id == word_id
     ).group_by(
@@ -114,5 +119,6 @@ def get_word(word_id: int, db: Session = Depends(get_db)):
         "english": word.english,
         "parts": parts,
         "correct_count": correct,
-        "wrong_count": wrong
+        "wrong_count": wrong,
+        "groups": [{"id": g.id, "name": g.name} for g in word.groups]
     }
