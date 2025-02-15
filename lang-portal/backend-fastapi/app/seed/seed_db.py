@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from app.database import SessionLocal, engine
-from app.models import Base, Word, StudyActivity
+from app.models import Base, Word, StudyActivity, Group
 import json
 
 def clean_db():
@@ -16,6 +16,15 @@ def load_json(filename: str):
 def seed_db():
     db = SessionLocal()
     try:
+        print("Creating groups...")
+        # Create verb and adjective groups
+        verb_group = Group(name="verb")
+        adj_group = Group(name="adjective")
+        db.add(verb_group)
+        db.add(adj_group)
+        db.flush()  # This ensures the groups get their IDs
+        print(f"Created groups with IDs: verb={verb_group.id}, adj={adj_group.id}")
+
         # Load and insert verbs
         verbs = load_json("data_verbs.json")
         for verb in verbs:
@@ -23,9 +32,9 @@ def seed_db():
                 kanji=verb["kanji"],
                 romaji=verb["romaji"],
                 english=verb["english"],
-                parts=verb["parts"],
-                type="verb"
+                parts=verb["parts"]
             )
+            word.groups.append(verb_group)  # Associate with verb group
             db.add(word)
 
         # Load and insert adjectives
@@ -35,9 +44,9 @@ def seed_db():
                 kanji=adj["kanji"],
                 romaji=adj["romaji"],
                 english=adj["english"],
-                parts=adj["parts"],
-                type="adjective"
+                parts=adj["parts"]
             )
+            word.groups.append(adj_group)  # Associate with adjective group
             db.add(word)
 
         # Load and insert study activities
@@ -51,6 +60,10 @@ def seed_db():
             db.add(study_activity)
 
         db.commit()
+        
+        # Verify after commit
+        groups = db.query(Group).all()
+        print(f"After seeding, found groups: {[g.name for g in groups]}")
     except Exception as e:
         print(f"Error seeding database: {e}")
         db.rollback()

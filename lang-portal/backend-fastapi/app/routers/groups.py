@@ -71,3 +71,27 @@ def add_word_to_group(
     db.commit()
     
     return {"status": "success", "message": "Word added to group"}
+
+@router.get("")
+def get_groups(
+    page: int = Query(default=1, gt=0),
+    db: Session = Depends(get_db)
+):
+    # Calculate pagination
+    limit = 10
+    offset = (page - 1) * limit
+    
+    # Debug: Print total count of groups
+    total_count = db.query(models.Group).count()
+    print(f"Total groups in database: {total_count}")
+    
+    # Query all groups with pagination
+    groups = db.query(models.Group)\
+        .offset(offset)\
+        .limit(limit)\
+        .all()
+    
+    # Debug: Print found groups
+    print(f"Found groups: {[g.name for g in groups]}")
+    
+    return groups
