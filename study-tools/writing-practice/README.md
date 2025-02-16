@@ -1,6 +1,6 @@
 # Writing Practice App
 
-Due to limited information in the requirements document,
+Due to limited information in the assignment document,
 https://docs.google.com/document/d/1KVDTDF4t8VtI69F5KMo67KoTBXgVhsd2O9hK-uPh2rA/edit?tab=t.lrj6eqolqwwv
 
 the following assumptions have been made for this implementation.
@@ -25,3 +25,8 @@ Enable users to practice writing simple sentences and receive feedback through i
 ## Additional Information
 - Integrates with lang-portal's word database
 - Focus on common daily expressions for practical learning (N5 to N3 level)
+
+## Personal Learning Goals
+- Gain hands-on experience with MangaOCR (and its limitations)
+- Understand integration between standalone tools and main applications
+- Bonus: Use a popular IIT model for OCR instead of MangaOCR
