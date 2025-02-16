@@ -9,12 +9,12 @@ the following assumptions have been made for this implementation.
 Enable users to practice writing simple sentences and receive feedback through image recognition.
 
 ## Acceptance Criteria
-- Users can select word groups (verbs, adjectives, etc.) to practice with
-- Users receive simple English sentences to translate
-- Users can upload photos of their handwritten Japanese answers
-- System accurately recognizes and verifies Japanese handwriting
-- Users receive clear feedback on their writing accuracy
-- Practice sessions cover words from their selected word groups
+- [ ] Users can select word groups (verbs, adjectives, etc.) to practice with
+- [ ] Users receive simple English sentences to translate
+- [ ] Users can upload photos of their handwritten Japanese answers
+- [ ] System accurately recognizes and verifies Japanese handwriting
+- [ ] Users receive clear feedback on their writing accuracy
+- [ ] Practice sessions cover words from their selected word groups
 
 ## Constraints
 - Limited to Japanese language only (due to MangaOCR)
