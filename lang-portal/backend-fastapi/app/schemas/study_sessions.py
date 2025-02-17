@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 
 class StudySessionCreate(BaseModel):
@@ -8,9 +8,7 @@ class StudySessionCreate(BaseModel):
 class StudySession(StudySessionCreate):
     id: int
     created_at: datetime
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class WordReviewCreate(BaseModel):
     word_id: int

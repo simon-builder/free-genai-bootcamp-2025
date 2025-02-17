@@ -34,3 +34,5 @@ typing_extensions==4.12.2
 watchfiles==1.0.4
 websockets==14.2
 wheel==0.45.1
+pytest
+pytest-cov

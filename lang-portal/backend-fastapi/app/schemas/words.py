@@ -1,15 +1,18 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
-class WordCreate(BaseModel):
+class WordBase(BaseModel):
     kanji: str
     romaji: str
     english: str
     parts: dict
 
-class Word(WordCreate):
+    # New style using ConfigDict
+    model_config = ConfigDict(from_attributes=True)
+
+class Word(WordBase):
     id: int
     correct_count: int = 0
     wrong_count: int = 0
 
-    class Config:
-        from_attributes = True
+class WordCreate(WordBase):
+    pass

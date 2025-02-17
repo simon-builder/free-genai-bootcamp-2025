@@ -13,8 +13,15 @@ def load_json(filename: str):
     with open(f"app/seed/{filename}", "r", encoding="utf-8") as f:
         return json.load(f)
 
-def seed_db():
-    db = SessionLocal()
+def seed_db(db=None):
+    should_close_db = False
+    if db is None:
+        # Create database engine and session if none provided
+        engine = create_engine(SQLALCHEMY_DATABASE_URL)
+        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+        db = SessionLocal()
+        should_close_db = True
+    
     try:
         print("Creating groups...")
         # Create verb and adjective groups
@@ -69,7 +76,8 @@ def seed_db():
         db.rollback()
         raise
     finally:
-        db.close()
+        if should_close_db:
+            db.close()
 
 if __name__ == "__main__":
     print("Cleaning database...")

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import List
 from .words import WordCreate
 
@@ -8,12 +8,8 @@ class GroupCreate(BaseModel):
 class Group(GroupCreate):
     id: int
     words_count: int
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class GroupWithWords(Group):
     words: List[WordCreate]
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
