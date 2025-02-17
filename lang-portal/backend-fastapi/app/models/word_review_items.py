@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, UTC
 from app.database import Base
 
 class WordReviewItem(Base):
@@ -10,7 +10,7 @@ class WordReviewItem(Base):
     word_id = Column(Integer, ForeignKey("words.id"), nullable=False)
     study_session_id = Column(Integer, ForeignKey("study_sessions.id"), nullable=False)
     correct = Column(Boolean, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(UTC))
 
     # Relationships
     word = relationship("Word", back_populates="review_items")

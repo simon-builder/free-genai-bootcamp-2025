@@ -25,14 +25,24 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin
 
 @pytest.fixture(scope="function")
 def db():
+    # Create tables for each test
     Base.metadata.create_all(bind=engine)
-    db = TestingSessionLocal()
+    connection = engine.connect()
+    # Begin a non-ORM transaction
+    transaction = connection.begin()
+    
+    # Create session bound to this connection
+    session = TestingSessionLocal(bind=connection)
+    
     try:
-        # Use the existing seed function
-        seed_db(db)
-        yield db
+        seed_db(session)  # Seed data
+        yield session
     finally:
-        db.close()
+        session.close()
+        # Rollback the transaction
+        transaction.rollback()
+        # Close the connection
+        connection.close()
         Base.metadata.drop_all(bind=engine)
 
 @pytest.fixture(scope="function")
@@ -44,4 +54,6 @@ def client(db):
             pass
     
     app.dependency_overrides[get_db] = override_get_db
-    return TestClient(app) 
+    with TestClient(app) as test_client:
+        yield test_client
+    app.dependency_overrides.clear() 
