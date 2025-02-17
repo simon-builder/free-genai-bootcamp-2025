@@ -4,6 +4,7 @@ Supertype3 core repository containing language learning applications and tools.
 
 ## Project Structure
 
+```
 .
 ├── lang-portal/               # Main application
 │   ├── backend-fastapi/      # REST API for vocabulary and study management
@@ -16,6 +17,7 @@ Supertype3 core repository containing language learning applications and tools.
 ├── sentence-constructor/     # AI prompt engineering exercise for language learning
 │
 └── genai-architecture/       # AI integration planning and requirements
+```
 
 ## Tech Stack
 - Backend: FastAPI, SQLAlchemy, SQLite
