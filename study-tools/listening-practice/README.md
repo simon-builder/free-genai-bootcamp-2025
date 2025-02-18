@@ -1,40 +1,50 @@
 # Listening Practice App
 
-An optional app focused on improving Japanese listening comprehension through AI-generated conversations and comprehension questions.
+A Japanese listening comprehension app that generates practice content similar to YouTube language learning test examples.
 
 ## Goal
-Enable users to practice listening comprehension through generated conversations with context and verify understanding through multiple-choice questions.
+Create an app that can analyze YouTube listening comprehension examples and generate similar practice content for Japanese language learners.
 
-## Acceptance Criteria
-- [ ] System generates contextual introduction for each conversation scenario
-- [ ] Creates dialogue (N5-N3 level) between two speakers in Japanese
-- [ ] Converts dialogue to speech using TTS model
-- [ ] Generates 1 relevant comprehension question based on the conversation
-- [ ] Provides 4 multiple-choice answers for the question
+## Core Requirements
+- [ ] YouTube transcript extraction using YouTube Transcript API
+- [ ] Vector storage of transcripts in SQLite3
+- [ ] LLM agent to analyze and generate similar content
+- [ ] TTS conversion for generated content
+- [ ] Simple frontend using Streamlit
+- [ ] Basic guardrails for content generation
+- [ ] Multiple-choice answer validation
 
-## Constraints
-- Limited to Japanese language only
-- Conversations should be short (around 30 seconds)
-- Vocabulary limited to common expressions (N5-N3 level)
+## Optional Features
+- [ ] Speech-to-Text (ASR) capabilities using OpenWhisper
+- [ ] Performance tracking
+- [ ] Audio replay functionality
 
-## Technical Components
-- TTS Model integration
-- Conversation generation using LLM
-- Question generation system
-- Answer validation and scoring
+## Technical Stack
+- Database: SQLite3 with vector storage
+- Frontend: Streamlit
+- AI Components:
+  - LLM Agent for content generation
+  - TTS (Amazon Polly or alternative)
+  - YouTube Transcript API
+  - AI Coding Assistant (Github Copilot)
 
-## Example Flow
-1. User starts new practice session
-2. System presents situation context: "At a restaurant ordering food"
-3. Plays generated conversation between customer and waiter
-4. Presents question: "What did the customer order?"
-5. Shows 4 multiple-choice options
-6. Provides feedback on user's answer
+## Technical Challenges
+1. Japanese language support in TTS systems
+2. Vector storage implementation with SQLite3
+3. YouTube transcript extraction reliability
+4. Content quality guardrails
 
-## Personal Learning Goals
-- Implement TTS models
-- Design natural conversation flows
-- Create meaningful comprehension question
-- Handle audio processing in web applications
+## Development Flow
+1. Extract transcripts from Japanese listening comprehension videos
+2. Store and analyze transcript patterns
+3. Generate similar content using LLM
+4. Convert generated content to speech
+5. Present through Streamlit interface
+
+## MVP Focus
+- YouTube transcript extraction and analysis (focus on the first 10-15 minutes of video if it is too long)
+- Basic content generation
+- Simple TTS implementation
+- Minimal Streamlit interface
 
 
