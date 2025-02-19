@@ -9,7 +9,7 @@ the following assumptions have been made for this implementation.
 Enable users to practice writing simple sentences and receive feedback through image recognition.
 
 ## Acceptance Criteria
-- [ ] Users can select word groups (verbs, adjectives, etc.) to practice with
+- [x] Users can select word groups (verbs, adjectives, etc.) to practice with
 - [x] Users receive simple English sentences to translate
 - [x] Users can upload photos of their handwritten Japanese answers
 - [ ] System accurately recognizes and verifies Japanese handwriting
