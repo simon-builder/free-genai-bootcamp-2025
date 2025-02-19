@@ -1,3 +1,6 @@
 streamlit
 Pillow
-manga-ocr 
+manga-ocr
+openai
+python-dotenv
+requests 
