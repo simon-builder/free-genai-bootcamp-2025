@@ -6,6 +6,7 @@ import os
 from dotenv import load_dotenv
 import requests
 from typing import Dict, List, TypedDict, Optional, Union
+import random
 
 # Load environment variables
 load_dotenv()
@@ -77,8 +78,25 @@ def generate_sentence(selected_words: List[str]) -> Optional[Dict[str, str]]:
     if not selected_words:
         return None
     
+    # Get previously used words from session state
+    if "used_words" not in st.session_state:
+        st.session_state.used_words = set()
+    
+    # Filter out previously used words, if possible
+    available_words = [w for w in selected_words if w not in st.session_state.used_words]
+    if not available_words:  # If all words were used, reset the tracking
+        available_words = selected_words
+        st.session_state.used_words = set()
+    
+    # Select 1-3 random words to use
+    num_words = min(3, len(available_words))
+    chosen_words = random.sample(available_words, num_words)
+    
+    # Add chosen words to used words set
+    st.session_state.used_words.update(chosen_words)
+    
     prompt = f"""Generate a simple Japanese sentence with its English translation.
-    Use one or more of these Japanese words: {', '.join(selected_words)}
+    Use one or more of these Japanese words: {', '.join(chosen_words)}
     
     Requirements:
     1. The sentence should be simple and suitable for N5-N3 level
@@ -86,16 +104,17 @@ def generate_sentence(selected_words: List[str]) -> Optional[Dict[str, str]]:
     {{"en": "English sentence", "ja": "Japanese sentence"}}
     3. Use basic sentence structure (Subject + Object + Verb)
     4. The Japanese sentence must use at least one word from the provided list
+    5. Make the sentence different from previous ones by varying the context
     """
 
     try:
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-3.5-turbo",  # Changed from gpt-4o-mini
             messages=[
-                {"role": "system", "content": "You are a Japanese language teacher."},
+                {"role": "system", "content": "You are a Japanese language teacher. Create varied, natural sentences."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.7
+            temperature=0.9  # Increased temperature for more randomness
         )
         
         if response.choices and response.choices[0].message.content:
