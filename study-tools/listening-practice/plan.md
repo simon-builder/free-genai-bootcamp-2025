@@ -71,3 +71,6 @@
 5. Polish UI/UX
 
 ## Project Structure 
+
+Video example
+https://www.youtube.com/watch?v=0e0duD8_LFE

@@ -2,3 +2,5 @@ streamlit
 youtube-transcript-api
 pandas
 python-dotenv
+openai
+pydub

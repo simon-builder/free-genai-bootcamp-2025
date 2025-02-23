@@ -1,5 +1,6 @@
 import sqlite3
 from typing import Dict, List, Optional
+from datetime import datetime
 
 class Database:
     def __init__(self, db_path: str = "listening_practice.db"):
@@ -32,6 +33,22 @@ class Database:
                     text TEXT NOT NULL,
                     start_time FLOAT NOT NULL,
                     duration FLOAT NOT NULL,
+                    FOREIGN KEY (video_id) REFERENCES videos (video_id)
+                )
+            ''')
+            
+            # Create generated_content table
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS generated_content (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    video_id TEXT NOT NULL,
+                    context TEXT NOT NULL,
+                    conversation TEXT NOT NULL,
+                    question TEXT NOT NULL,
+                    options TEXT NOT NULL,
+                    correct_answer TEXT NOT NULL,
+                    explanation TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (video_id) REFERENCES videos (video_id)
                 )
             ''')
@@ -117,3 +134,60 @@ class Database:
                 (video_id,)
             )
             return cursor.fetchone() is not None
+
+    def save_generated_content(self, video_id: str, content: Dict) -> bool:
+        """Save generated practice content to database."""
+        try:
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    """
+                    INSERT INTO generated_content 
+                    (video_id, context, conversation, question, options, correct_answer, explanation)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        video_id,
+                        content['context'],
+                        content['conversation'],
+                        content['question'],
+                        str(content['options']),  # Convert list to string
+                        content['correct_answer'],
+                        content['explanation']
+                    )
+                )
+                conn.commit()
+                return True
+        except Exception as e:
+            print(f"Error saving generated content: {e}")
+            return False
+
+    def get_generated_content(self, video_id: str) -> Optional[List[Dict]]:
+        """Retrieve all generated content for a video."""
+        try:
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    """
+                    SELECT context, conversation, question, options, correct_answer, explanation
+                    FROM generated_content
+                    WHERE video_id = ?
+                    ORDER BY created_at DESC
+                    """,
+                    (video_id,)
+                )
+                
+                results = cursor.fetchall()
+                if results:
+                    return [{
+                        'context': row[0],
+                        'conversation': row[1],
+                        'question': row[2],
+                        'options': eval(row[3]),  # Convert string back to list
+                        'correct_answer': row[4],
+                        'explanation': row[5]
+                    } for row in results]
+                return None
+        except Exception as e:
+            print(f"Error retrieving generated content: {e}")
+            return None
